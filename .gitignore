@@ -1,0 +1,24 @@
+# General
+node_modules/
+vendor/
+.env
+.env.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+.vscode/
+.idea/
+
+# Build / artifacts
+build/
+dist/
+coverage/
+out/
+*.log
+
+# Language-specific
+# Add more as needed per your stack
