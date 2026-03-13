@@ -22,3 +22,4 @@ out/
 
 # Language-specific
 # Add more as needed per your stack
+/generated/prisma
