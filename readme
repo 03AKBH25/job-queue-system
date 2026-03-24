@@ -1,0 +1,3 @@
+to start backend: npm run dev
+to start worker: npm run worker
+to start frontend: npm run start

@@ -2,7 +2,8 @@ import IORedis from "ioredis"
 
 const redisConnection = new IORedis({
     host: "localhost",
-    port: 6739
+    port: 6739,
+    maxRetriesPerRequest: null
 })
 
 redisConnection.on("connect",() => {
