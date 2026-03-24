@@ -11,7 +11,7 @@ async function testQueue() {
       payload: {
         userId: 1,
         reportType: "monthly",
-        shouldFail: true
+        shouldFail: "true"
       }
     }
   });
@@ -25,7 +25,7 @@ async function testQueue() {
     payload: {
       userId: 1,
       reportType: "monthly",
-      shouldFail: true
+      shouldFail: "true"
     }
   });
 
