@@ -184,3 +184,69 @@ export const getFailedJobsService = async(query)=>{
     throw error
   }
 }
+
+export const deleteJobService = async (jobId) => {
+  try {
+
+    // Check if job exists
+    const job = await prisma.job.findUnique({
+      where: { id: jobId }
+    });
+
+    if (!job) {
+      throw new Error("Job not found");
+    }
+
+    // Delete job
+    await prisma.job.delete({
+      where: { id: jobId }
+    });
+
+    return true;
+
+  } catch (error) {
+    console.error("❌ deleteJobService error:", error);
+    throw error;
+  }
+};
+
+export const replayJobService = async (jobId) => {
+  try{
+    //1. Fetch job from DB
+    const job = await prisma.job.findUnique({
+      where: {id: jobId}
+    })
+
+    if(!job){
+      throw new Error("Job not found")
+    }
+
+    // 2. Validate Status
+    if(job.status !== "FAILED"){
+      throw new Error("Only FAILED jobs can be replayed")
+    }
+
+    // 3. Reset Job
+    await prisma.job.update({
+      where: {id: jobId},
+      data:{
+        status: "WAITING",
+        attempts: 0,
+        result: null,
+        updatedAt: new Date()
+      }
+    })
+
+    // 4. Push back to Queue
+    await jobQueue.add(job.type, {
+      jobId: job.id,
+      payload: job.payload,
+      type: job.type
+     })
+
+     return true
+    }catch(error){
+      console.error("❌ replayJobService error:", error)
+      throw error
+  }
+}

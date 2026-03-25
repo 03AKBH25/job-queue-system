@@ -1,7 +1,9 @@
-import { createJobService, getFailedJobsService } from "../services/jobServices.js"
+import { createJobService, replayJobService , getFailedJobsService, deleteJobService } from "../services/jobServices.js"
 import { getJobByIdService, getJobsService, getJobStatsService } from "../services/jobServices.js"
 import prisma from "../../../shared/prismaClient.js"
 import jobQueue from "../queues/jobQueue.js"
+
+// Controller for creating a new job
 
 export const createJob = async (req, res) => {
   try {
@@ -36,6 +38,8 @@ export const createJob = async (req, res) => {
   }
 }
 
+// Controller for getting a job by id
+
 export const getJobById = async(req, res)=>{
   try{
     const {id} = req.params
@@ -53,50 +57,31 @@ export const getJobById = async(req, res)=>{
   }
 }
 
-export const replayJob = async(req, res)=>{
-  const {jobId} = req.params
+// Controller for replaying a job by id
 
-  try{
-    //1. Fetch job from DB
-    const job = await prisma.job.findUnique({
-      where: {id: jobId}
-    })
-    if(!job){
-      return res.status(404).json({error: "Job not found"})
-    }
+export const replayJob = async (req, res) => {
+  try {
 
-    //2. Only allow replaying failed jobs
-    if(job.status !== "FAILED"){
-      return res.status(400).json({error: "Only failed jobs can be replayed"})
-    }
+    const { jobId } = req.params;
 
-    //3. Reset job in DB
-    await prisma.job.update({
-      where: {id: jobId},
-      data:{
-        status: "WAITING",
-        attempts: 0,
-        result: null,
-      }
-    })
+    await replayJobService(jobId);
 
-    //4. Add job back to queue
-    await jobQueue.add(job.type, {
-      jobId: job.id,
-      payload: job.payload,
-      type: job.type
-    })
-
-    return res.json({
+    return res.status(200).json({
+      success: true,
       message: "Job replayed successfully"
-    })
-  }catch(error){
-    console.error("Replay error:", error)
-    return res.status(500).json({
-      error: "Internal Server Error"
-    })
+    });
+
+  } catch (error) {
+    console.error("❌ replayJob controller error:", error);
+
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
   }
-}
+};
+
+// Controller for Getting all the jobs with pagination, filtering and sorting
 
 export const getJobs = async(req, res)=>{
   try{
@@ -115,6 +100,8 @@ export const getJobs = async(req, res)=>{
   }
 }
 
+// Controller for getting job stats like total jobs, completed jobs, failed jobs etc.
+
 export const getJobStats = async(req, res)=>{
   try{
     const stats = await getJobStatsService()
@@ -130,6 +117,8 @@ export const getJobStats = async(req, res)=>{
     })
   }
 }
+
+// Controller for getting failed jobs with pagination and filtering
 
 export const getFailedJobs = async(req, res)=>{
   try{
@@ -147,3 +136,28 @@ export const getFailedJobs = async(req, res)=>{
     })
   }
 }
+
+// Controller for deleting a job by id
+
+export const deleteJob = async (req, res) => {
+  try {
+
+    const { jobId } = req.params;
+
+    await deleteJobService(jobId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Job deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("❌ deleteJob controller error:", error);
+
+    return res.status(404).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
