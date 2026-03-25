@@ -88,6 +88,8 @@ export const getJobsService = async(query)=>{
       orderBy
     })
 
+    const total = await prisma.job.count({ where })
+
     // 4. Return Structured Response
     return{
       jobs, 

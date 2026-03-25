@@ -1,10 +1,11 @@
 import express from "express"
-import { createJob, getJobById, replayJob } from "../controllers/jobController.js"
+import { createJob, getJobById, replayJob, getJobs } from "../controllers/jobController.js"
 
 const router = express.Router()
 
-router.post("/jobs", createJob)
-router.get("/jobs/:id", getJobById)
-router.post("/jobs/replay/:jobId", replayJob)
+router.post("/", createJob)
+router.get("/:id", getJobById)
+router.post("/replay/:jobId", replayJob)
+router.get("/", getJobs)
 
 export default router;
