@@ -140,3 +140,47 @@ export const getJobStatsService = async()=>{
     console.error("❌ GetJobStatsService error:", error)
     throw error}
 }
+
+// 
+
+export const getFailedJobsService = async(query)=>{
+  try{
+    let {page =1, limit=10} = query
+
+    //Convert to numbers
+    page = parseInt(page)
+    limit = parseInt(limit)
+
+    // Auto correct invalid values:
+
+    if(isNaN(page) || page < 1) page = 1
+    if(isNaN(limit) || limit < 10) limit = 10
+    if(limit >50) limit = 50
+
+    const skip = (page - 1) * limit
+    const where = { status: "FAILED" }
+
+    const [jobs, total] = await Promise.all([
+      prisma.job.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" }
+      }),
+      prisma.job.count({ where })
+    ])
+
+    return {
+      jobs, 
+      meta:{
+        page, 
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
+  }catch(error){
+    console.error("❌ GetFailedJobsService error:", error)
+    throw error
+  }
+}

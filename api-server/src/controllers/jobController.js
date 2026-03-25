@@ -1,4 +1,4 @@
-import { createJobService } from "../services/jobServices.js"
+import { createJobService, getFailedJobsService } from "../services/jobServices.js"
 import { getJobByIdService, getJobsService, getJobStatsService } from "../services/jobServices.js"
 import prisma from "../../../shared/prismaClient.js"
 import jobQueue from "../queues/jobQueue.js"
@@ -124,6 +124,23 @@ export const getJobStats = async(req, res)=>{
     })
   }catch(error){
     console.error("GetJobStats Controller error:", error)
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    })
+  }
+}
+
+export const getFailedJobs = async(req, res)=>{
+  try{
+    const result = await getFailedJobsService(req.query)
+    return res.status(200).json({
+      success: true,
+      data: result.jobs,
+      meta: result.meta
+    })
+  }catch(error){
+    console.error("GetFailedJobs Controller error:", error)
     return res.status(500).json({
       success: false,
       message: "Internal Server Error"
