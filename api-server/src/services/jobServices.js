@@ -46,3 +46,61 @@ export const getJobByIdService = async (jobId) =>{
     throw error
   }
 }
+
+export const getJobsService = async(query)=>{
+  try{
+    // 1. Extract & sanitize query params
+    let {page =1, limit=10, type, status, sortBy = "createdAt", order = "desc"} = query
+
+    //Convert to numbers
+    page = parseInt(page)
+    limit = parseInt(limit)
+
+    // Auto correct invalid values:
+
+    if(isNaN(page) || page < 1) page = 1
+    if(isNaN(limit) || limit < 10) limit = 10
+    if(limit >50) limit = 50
+
+    //  2. Build Filters
+    const where = {}
+    if(status){
+      where.status = status
+    }
+    if(type){
+      where.type = type
+    }
+
+    // 3. Pagination & Sorting
+
+    const skip = (page - 1) * limit
+
+    const orderBy = {
+      [sortBy]: order === "asc" ? "asc" : "desc"
+    }
+
+    //  4. Fetch from DB
+
+    const jobs = await prisma.job.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy
+    })
+
+    // 4. Return Structured Response
+    return{
+      jobs, 
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
+  } catch (error) {
+    console.error("❌ GetJobsService error:", error)
+    throw error
+
+  }
+}
