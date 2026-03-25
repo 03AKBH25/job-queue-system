@@ -106,3 +106,37 @@ export const getJobsService = async(query)=>{
 
   }
 }
+
+// For dashboard stats
+
+export const getJobStatsService = async()=>{
+  try{
+    // * Group by status
+    const stats = await prisma.job.groupBy({
+      by: ["status"],
+      _count: {
+        status: true
+      }
+    })
+
+    // * Convert to clean structure
+    const formattedStats = {
+      total: 0,
+      COMPLETED: 0,
+      FAILED: 0,
+      WAITING: 0,
+      ACTIVE: 0
+    }
+
+    stats.forEach(item=>{
+      const status = item.status
+      const count = item._count.status
+      formattedStats[status] = count
+      formattedStats.total += count
+    })
+
+    return formattedStats
+  }catch(error){
+    console.error("❌ GetJobStatsService error:", error)
+    throw error}
+}
