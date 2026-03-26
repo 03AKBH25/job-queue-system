@@ -15,6 +15,23 @@ const worker = new Worker(
 
     try {
 
+      // 1. Idempotency check - ensure job is still in WAITING status before processing
+      const existingJob = await prisma.job.findUnique({
+        where: {id: jobId }
+      })
+
+      // 2. If job is not found or already being processed/completed, skip it
+      if (!existingJob) {
+        console.log("⚠️ Job not found in database. Skipping processing.", jobId)
+        return { skipped: true, reason: "NOT_FOUND" }
+      }
+
+      if (existingJob.status === "COMPLETED") {
+        console.log("✅ Job already completed. Skipping processing.", jobId)
+        // Return existing result so the completed event doesn't overwrite the actual report!
+        return existingJob.result || { skipped: true }
+      }
+
       console.log("🔄 Updating job status to ACTIVE")
 
       await prisma.job.update({
@@ -33,6 +50,7 @@ const worker = new Worker(
   },
   {
     connection: redisConnection,
+    concurrency: 5
   }
 )
 
@@ -40,6 +58,9 @@ worker.on("completed", async (job, result) => {
   console.log(`✅ Job ${job.id} completed`)
 
   const { jobId } = job.data
+
+  // Prevent updating DB if the job was already deleted and thus skipped
+  if (result && result.skipped && result.reason === "NOT_FOUND") return;
 
   try {
     await prisma.job.update({
