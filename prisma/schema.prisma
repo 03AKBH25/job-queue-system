@@ -24,6 +24,7 @@ model Job {
   status    JobStatus @default(WAITING)
   payload   Json
   result    Json?
+  progress  Int       @default(0)
 
   attempts  Int       @default(0)
   maxAttempts Int     @default(3)
