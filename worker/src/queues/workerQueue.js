@@ -15,29 +15,35 @@ const worker = new Worker(
 
     try {
 
-      // 1. Idempotency check - ensure job is still in WAITING status before processing
-      const existingJob = await prisma.job.findUnique({
-        where: {id: jobId }
-      })
-
-      // 2. If job is not found or already being processed/completed, skip it
-      if (!existingJob) {
-        console.log("⚠️ Job not found in database. Skipping processing.", jobId)
-        return { skipped: true, reason: "NOT_FOUND" }
-      }
-
-      if (existingJob.status === "COMPLETED") {
-        console.log("✅ Job already completed. Skipping processing.", jobId)
-        // Return existing result so the completed event doesn't overwrite the actual report!
-        return existingJob.result || { skipped: true }
-      }
-
-      console.log("🔄 Updating job status to ACTIVE")
-
-      await prisma.job.update({
-        where: { id: jobId },
+      // 1. Atomic Idempotency Check & Update
+      // Atomic operation to prevent race conditions when two workers get the same job
+      const updatedJobs = await prisma.job.updateMany({
+        where: { 
+          id: jobId,
+          status: "WAITING" // Only process if currently WAITING
+        },
         data: { status: "ACTIVE" }
       })
+
+      // 2. If no rows were updated, job is either not found, completed, or already being processed
+      if (updatedJobs.count === 0) {
+        const existingJob = await prisma.job.findUnique({ where: { id: jobId } })
+        
+        if (!existingJob) {
+          console.log("⚠️ Job not found in database. Skipping processing.", jobId)
+          return { skipped: true, reason: "NOT_FOUND" }
+        }
+
+        if (existingJob.status === "COMPLETED") {
+          console.log("✅ Job already completed. Skipping processing.", jobId)
+          return existingJob.result || { skipped: true }
+        }
+
+        console.log(`⚠️ Job is already being processed (status: ${existingJob.status}). Skipping duplicate execution.`, jobId)
+        return { skipped: true, reason: "ALREADY_PROCESSING" }
+      }
+
+      console.log("🔄 Job locked and status updated to ACTIVE")
 
       const result = await jobProcessor(job)
 
