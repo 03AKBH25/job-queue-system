@@ -1,6 +1,6 @@
 import { Worker } from "bullmq";
 import redisConnection from "../../../shared/redisConnection.js";
-import jobProcessor from "../processors/jobProcessor.js";
+import { processors } from "../processors/index.js";
 import prisma from "../../../shared/prismaClient.js"
 import { MAX_RETRIES, RETRY_DELAY } from "../../../api-server/src/config/jobConfig.js"
 import jobQueue from "../../../api-server/src/queues/jobQueue.js";
@@ -11,7 +11,8 @@ const worker = new Worker(
   async (job) => {
     console.log("📥 Job received by worker:", job.id)
 
-    const { jobId } = job.data
+    const { jobId } = job.data;
+    const type = job.name;
 
     try {
 
@@ -45,7 +46,16 @@ const worker = new Worker(
 
       console.log("🔄 Job locked and status updated to ACTIVE")
 
-      const result = await jobProcessor(job)
+      // 3. Process the job using the appropriate processor based on job type
+      const processor = processors[type]
+      if(!processor) {
+        console.error(`❌ No processor found for job type: ${type}`)
+        const error = new Error(`No processor for type: ${type}`)
+        error.isNonRetriable = true // Mark as permanent error to skip retries
+        throw error
+      }
+
+      const result = await processor(job)
 
       return result
 
@@ -97,7 +107,7 @@ worker.on("failed", async (job, err) => {
     const currentAttempts = existingJob.attempts + 1
 
     // 🔁 Check retry condition
-    if (currentAttempts <= MAX_RETRIES) {
+    if (currentAttempts <= MAX_RETRIES && !err.isNonRetriable) {
 
       const delay = RETRY_DELAY(currentAttempts)
 
@@ -123,7 +133,11 @@ worker.on("failed", async (job, err) => {
 
     } else {
 
-      console.log("🚫 Max retries reached. Sending job to Dead Letter Queue")
+      if (err.isNonRetriable) {
+        console.log("🚫 Permanent error encountered. Sending job directly to Dead Letter Queue")
+      } else {
+        console.log("🚫 Max retries reached. Sending job to Dead Letter Queue")
+      }
 
       await prisma.job.update({
         where: { id: jobId },
