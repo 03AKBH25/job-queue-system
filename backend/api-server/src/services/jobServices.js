@@ -1,7 +1,7 @@
 import prisma from "../../../shared/prismaClient.js"
 import jobQueue from "../queues/jobQueue.js"
 
-export const createJobService = async (type, payload) => {
+export const createJobService = async (type, payload, jobPriority) => {
   try {
 
     console.log("💾 Saving job in database")
@@ -10,6 +10,7 @@ export const createJobService = async (type, payload) => {
       data: {
         type,
         payload,
+        priority: jobPriority
       }
     })
 
@@ -19,7 +20,10 @@ export const createJobService = async (type, payload) => {
       jobId: jobRecord.id,
       payload,
       type
-    })
+    },{
+      priority: jobPriority
+    }
+  )
 
     await prisma.job.update({
       where: { id: jobRecord.id },
@@ -245,11 +249,13 @@ export const replayJobService = async (jobId) => {
       }
     })
 
-    // 4. Push back to Queue
+    // 4. Push back to Queue with same priority
     await jobQueue.add(job.type, {
       jobId: job.id,
       payload: job.payload,
       type: job.type
+     },{
+      priority: job.priority
      })
 
      return true

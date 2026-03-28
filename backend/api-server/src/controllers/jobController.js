@@ -10,7 +10,9 @@ export const createJob = async (req, res) => {
 
     console.log("📥 Job creation request received")
 
-    const { type, payload } = req.body
+    const { type, payload, priority } = req.body
+
+    const jobPriority = priority || 5;
 
     if (!type) {
       return res.status(400).json({
@@ -19,7 +21,7 @@ export const createJob = async (req, res) => {
       })
     }
 
-    const job = await createJobService(type, payload)
+    const job = await createJobService(type, payload, jobPriority)
 
     return res.status(201).json({
       success: true,

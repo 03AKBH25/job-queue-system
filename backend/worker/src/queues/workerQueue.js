@@ -137,7 +137,8 @@ worker.on("failed", async (job, err) => {
         payload,
         type
       }, {
-        delay
+        delay,
+        priority: existingJob.priority
       })
 
     } else {

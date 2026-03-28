@@ -28,6 +28,7 @@ model Job {
   result      Json?
   progress    Int       @default(0)
   queueJobId  String?
+  priority    Int       @default(5)
 
   attempts  Int       @default(0)
   maxAttempts Int     @default(3)
