@@ -16,6 +16,8 @@ enum JobStatus {
   ACTIVE
   COMPLETED
   FAILED
+  RETRYING
+  CANCELLED
 }
 
 model Job {
