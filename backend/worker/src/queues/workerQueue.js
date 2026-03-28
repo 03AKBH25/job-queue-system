@@ -75,19 +75,28 @@ worker.on("completed", async (job, result) => {
 
   const { jobId } = job.data
 
-  // Prevent updating DB if the job was already deleted and thus skipped
-  if (result && result.skipped && result.reason === "NOT_FOUND") return;
+  if (result && result.skipped && result.reason === "NOT_FOUND") {return}
 
-  try {
+  try{
+    // 1. Check the current DB status first
+    const existingJob = await prisma.job.findUnique({
+      where: { id: jobId }
+    })
+    
+    // 2. If it was cancelled while processing, DO NOT overwrite to COMPLETED
+    if (existingJob && existingJob.status === "CANCELLED") {
+      console.log(`⚠️ Job ${jobId} was cancelled during processing. Preserving CANCELLED status.`)
+      return;
+    }
+
+    // 3. Normal Completion Update
     await prisma.job.update({
       where: { id: jobId },
-      data: {
-        status: "COMPLETED",
-        result
-      }
+      data: { status: "COMPLETED", result: result }
     })
-  } catch (error) {
-    console.error("❌ Error updating completed status:", error)
+    
+  } catch(error){
+    console.error("❌ Error updating job status to COMPLETED:", error)
   }
 })
 

@@ -21,12 +21,13 @@ enum JobStatus {
 }
 
 model Job {
-  id        String    @id @default(uuid())
-  type      String
-  status    JobStatus @default(WAITING)
-  payload   Json
-  result    Json?
-  progress  Int       @default(0)
+  id          String    @id @default(uuid())
+  type        String
+  status      JobStatus @default(WAITING)
+  payload     Json
+  result      Json?
+  progress    Int       @default(0)
+  queueJobId  String?
 
   attempts  Int       @default(0)
   maxAttempts Int     @default(3)

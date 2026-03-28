@@ -1,5 +1,5 @@
 import { createJobService, replayJobService , getFailedJobsService, deleteJobService } from "../services/jobServices.js"
-import { getJobByIdService, getJobsService, getJobStatsService } from "../services/jobServices.js"
+import { cancelJobService, getJobByIdService, getJobsService, getJobStatsService } from "../services/jobServices.js"
 import prisma from "../../../shared/prismaClient.js"
 import jobQueue from "../queues/jobQueue.js"
 
@@ -161,3 +161,24 @@ export const deleteJob = async (req, res) => {
   }
 };
 
+// Controller for canceling a job by id
+
+export const cancelJob = async (req, res) => {
+  try {
+
+    const { jobId } = req.params;
+
+    await cancelJobService(jobId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Job cancelled successfully"
+    });
+
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

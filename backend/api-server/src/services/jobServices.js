@@ -17,7 +17,15 @@ export const createJobService = async (type, payload) => {
 
     const queueJob = await jobQueue.add(type, {
       jobId: jobRecord.id,
-      payload
+      payload,
+      type
+    })
+
+    await prisma.job.update({
+      where: { id: jobRecord.id },
+      data:{
+        queueJobId: queueJob.id.toString()
+      }
     })
 
     console.log("✅ Job added to queue:", queueJob.id)
@@ -250,3 +258,60 @@ export const replayJobService = async (jobId) => {
       throw error
   }
 }
+
+export const cancelJobService = async (jobId) => {
+  try {
+
+    const job = await prisma.job.findUnique({
+      where: { id: jobId }
+    });
+
+    if (!job) {
+      throw new Error("Job not found");
+    }
+
+    // ❌ Already completed
+    if (job.status === "COMPLETED") {
+      throw new Error("Cannot cancel completed job");
+    }
+
+    // 🟡 WAITING → remove from queue
+    if (job.status === "WAITING") {
+
+      if (job.queueJobId) {
+        const bullJob = await jobQueue.getJob(job.queueJobId);
+
+        if (bullJob) {
+          await bullJob.remove();
+        }
+      }
+
+      await prisma.job.update({
+        where: { id: jobId },
+        data: { status: "CANCELLED" }
+      });
+
+      return;
+    }
+
+    // 🟠 ACTIVE → soft cancel
+    if (job.status === "ACTIVE") {
+
+      await prisma.job.update({
+        where: { id: jobId },
+        data: { status: "CANCELLED" }
+      });
+
+      return;
+    }
+
+    // Optional: FAILED
+    if (job.status === "FAILED") {
+      throw new Error("Cannot cancel failed job");
+    }
+
+  } catch (error) {
+    console.error("❌ cancelJobService error:", error);
+    throw error;
+  }
+};
