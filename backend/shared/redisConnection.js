@@ -1,14 +1,18 @@
 import IORedis from "ioredis"
 
-const redisUrl = process.env.REDIS_URL || "redis://localhost:6739";
+const redisUrl = process.env.REDIS_URL;
 
-const redisConnection = new IORedis(redisUrl, {
+if (!redisUrl) {
+    console.warn("⚠️ REDIS_URL is not defined. Falling back to localhost (development mode).");
+}
+
+const redisConnection = new IORedis(redisUrl || "redis://localhost:6739", {
     maxRetriesPerRequest: null,
     keepAlive: 1000
 })
 
-redisConnection.on("connect",() => {
-    console.log("Redis connected");
+redisConnection.on("connect", () => {
+    console.log(`📌 Redis connected to: ${redisUrl ? 'Cloud (Upstash)' : 'Localhost'}`);
 })
 
 redisConnection.on("error",(err)=>{
