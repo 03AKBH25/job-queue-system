@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon api-server/server.js",
-    "worker": "nodemon worker/src/worker.js"
+    "worker": "nodemon worker/src/worker.js",
+    "start": "concurrently -n \"API,WORKER\" -c \"blue,green\" \"node api-server/server.js\" \"node worker/src/worker.js\""
   },
   "keywords": [],
   "author": "",
@@ -15,6 +16,7 @@
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "bullmq": "^5.71.0",
+    "concurrently": "^9.2.1",
     "express": "^5.2.1",
     "ioredis": "^5.10.0",
     "pg": "^8.20.0"

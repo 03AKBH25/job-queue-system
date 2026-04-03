@@ -1,3 +1,5 @@
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
 export const fetchJobs = async (filters = {}) => {
     // Generate query string
     const params = new URLSearchParams();
@@ -8,7 +10,7 @@ export const fetchJobs = async (filters = {}) => {
     params.append('limit', '50');
 
     const queryString = params.toString();
-    const url = `/jobs${queryString ? `?${queryString}` : ''}`;
+    const url = `${BASE_URL}/jobs${queryString ? `?${queryString}` : ''}`;
     
     const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch jobs');
@@ -16,13 +18,13 @@ export const fetchJobs = async (filters = {}) => {
 }
 
 export const fetchJobById = async (id) => {
-    const res = await fetch(`/jobs/${id}`);
+    const res = await fetch(`${BASE_URL}/jobs/${id}`);
     if (!res.ok) throw new Error('Failed to fetch job or job not found');
     return res.json();
 }
 
 export const createJob = async (jobData) => {
-    const res = await fetch('/jobs', {
+    const res = await fetch(`${BASE_URL}/jobs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(jobData)
@@ -35,13 +37,13 @@ export const createJob = async (jobData) => {
 }
 
 export const retryJob = async (jobId) => {
-    const res = await fetch(`/jobs/replay/${jobId}`, { method: 'POST' });
+    const res = await fetch(`${BASE_URL}/jobs/replay/${jobId}`, { method: 'POST' });
     if (!res.ok) throw new Error('Failed to retry job');
     return res.json();
 }
 
 export const cancelJob = async (jobId) => {
-    const res = await fetch(`/jobs/cancel/${jobId}`, { method: 'POST' });
+    const res = await fetch(`${BASE_URL}/jobs/cancel/${jobId}`, { method: 'POST' });
     if (!res.ok) throw new Error('Failed to cancel job');
     return res.json();
 }
