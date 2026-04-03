@@ -11,6 +11,9 @@ export const emailProcessor = async (job) => {
 
   // Step 1: Validate email
   await new Promise(res => setTimeout(res, 500));
+  if (job.data.payload?.simulateFailure) {
+    throw new Error("Simulated failure triggered during email validation.");
+  }
   await stepDone();
 
   // Step 2: Prepare content

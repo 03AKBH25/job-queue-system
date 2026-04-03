@@ -1,0 +1,50 @@
+
+Invalid `prisma.job.create()` invocation:
+
+{
+  data: {
+    type: "email",
+    payload: {
+      message: "test"
+    },
+    priority: 5,
+    ~~~~~~~~
+?   id?: String,
+?   status?: JobStatus,
+?   result?: NullableJsonNullValueInput | Json,
+?   attempts?: Int,
+?   createdAt?: DateTime,
+?   updatedAt?: DateTime
+  }
+}
+
+Unknown argument `priority`. Available options are marked with ?.
+PrismaClientValidationError: 
+Invalid `prisma.job.create()` invocation:
+
+{
+  data: {
+    type: "email",
+    payload: {
+      message: "test"
+    },
+    priority: 5,
+    ~~~~~~~~
+?   id?: String,
+?   status?: JobStatus,
+?   result?: NullableJsonNullValueInput | Json,
+?   attempts?: Int,
+?   createdAt?: DateTime,
+?   updatedAt?: DateTime
+  }
+}
+
+Unknown argument `priority`. Available options are marked with ?.
+    at ar (D:\projects\job-queue-system\backend\node_modules\@prisma\client\runtime\client.js:10:1374)
+    at Gr.handleRequestError (D:\projects\job-queue-system\backend\node_modules\@prisma\client\runtime\client.js:65:7929)
+    at Gr.handleAndLogRequestError (D:\projects\job-queue-system\backend\node_modules\@prisma\client\runtime\client.js:65:7581)
+    at Gr.request (D:\projects\job-queue-system\backend\node_modules\@prisma\client\runtime\client.js:65:7288)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (D:\projects\job-queue-system\backend\node_modules\@prisma\client\runtime\client.js:75:6730)
+    at async createJobService (file:///D:/projects/job-queue-system/backend/api-server/src/services/jobServices.js:9:23)
+    at async createJob (file:///D:/projects/job-queue-system/backend/api-server/src/controllers/jobController.js:24:17)

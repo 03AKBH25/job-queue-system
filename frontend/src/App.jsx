@@ -1,7 +1,9 @@
 import JobList from "./features/jobs/JobList";
 import Sidebar from "./features/jobs/Sidebar";
-import { Activity } from "lucide-react";
+import { Activity, Mail, FileText, AlertTriangle } from "lucide-react";
 import { useState } from "react";
+import { Toaster, toast } from "react-hot-toast";
+import { createJob } from "./features/jobs/jobApi";
 
 function App() {
   const [activeFilters, setActiveFilters] = useState({ status: null, type: null });
@@ -19,8 +21,34 @@ function App() {
     }
   };
 
+  const handleCreateDummyJob = async (type, simulateFailure = false) => {
+    const payload = simulateFailure 
+        ? { message: `Simulated failure test payload`, simulateFailure: true }
+        : { message: `Dummy ${type} payload test` };
+    
+    // Fire the promise to the toaster directly
+    const createPromise = createJob({
+        type,
+        payload,
+        priority: simulateFailure ? 1 : 5
+    });
+
+    toast.promise(createPromise, {
+        loading: 'Enqueuing job...',
+        success: `Successfully enqueued ${type} job!`,
+        error: (err) => `Failed: ${err.message}`
+    });
+  };
+
   return(
     <div className="min-h-screen bg-background text-primary selection:bg-accent/30 flex flex-col">
+      <Toaster position="top-right" toastOptions={{
+          style: {
+              background: '#1e293b',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.1)'
+          }
+      }} />
       {/* Dynamic Header */}
       <header className="sticky top-0 z-50 glass border-b border-white/5 shadow-lg">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -35,7 +63,30 @@ function App() {
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
+             {/* Dev Testing Tools */}
+             <div className="flex items-center gap-2 border-r border-white/10 pr-6 hidden md:flex">
+                <span className="text-xs text-secondary font-mono mr-2">Dev Tools:</span>
+                <button 
+                  onClick={() => handleCreateDummyJob('email')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all"
+                >
+                  <Mail className="w-3 h-3" /> + Email
+                </button>
+                <button 
+                  onClick={() => handleCreateDummyJob('report')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all"
+                >
+                  <FileText className="w-3 h-3" /> + Report
+                </button>
+                <button 
+                  onClick={() => handleCreateDummyJob('email', true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-all"
+                >
+                  <AlertTriangle className="w-3 h-3" /> + Fail Job
+                </button>
+             </div>
+
              <div className="flex items-center gap-2 text-sm text-secondary">
                <span className="relative flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>

@@ -30,15 +30,13 @@ export const createJob = async (req, res) => {
     })
 
   } catch (error) {
-
-    console.error("❌ Controller error:", error)
-
+    console.error("❌ Controller error:", error);
     return res.status(500).json({
       success: false,
       message: "Internal Server Error"
-    })
+    });
   }
-}
+};
 
 // Controller for getting a job by id
 

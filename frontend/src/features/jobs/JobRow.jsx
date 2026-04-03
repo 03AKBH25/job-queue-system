@@ -2,14 +2,19 @@ import { cancelJob, retryJob } from './jobApi';
 import { Badge } from './Badge';
 import { RotateCcw, XCircle, RefreshCw, Code2, Database, Mail } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 const JobRow = ({ job, onRefresh, index }) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleCancel = async () => {
+    setIsProcessing(true);
     try {
-      setIsProcessing(true);
-      await cancelJob(job.id);
+      await toast.promise(cancelJob(job.id), {
+        loading: 'Cancelling...',
+        success: 'Job cancelled successfully',
+        error: (err) => `Refund failed: ${err.message}`
+      });
       onRefresh();
     } catch (e) {
       console.error(e);
@@ -19,9 +24,13 @@ const JobRow = ({ job, onRefresh, index }) => {
   };
 
   const handleRetry = async () => {
+    setIsProcessing(true);
     try {
-      setIsProcessing(true);
-      await retryJob(job.id);
+      await toast.promise(retryJob(job.id), {
+        loading: 'Retrying...',
+        success: 'Job restarted successfully',
+        error: (err) => `Retry failed: ${err.message}`
+      });
       onRefresh();
     } catch (e) {
       console.error(e);

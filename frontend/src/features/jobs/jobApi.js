@@ -21,6 +21,19 @@ export const fetchJobById = async (id) => {
     return res.json();
 }
 
+export const createJob = async (jobData) => {
+    const res = await fetch('/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jobData)
+    });
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to create job');
+    }
+    return res.json();
+}
+
 export const retryJob = async (jobId) => {
     const res = await fetch(`/jobs/replay/${jobId}`, { method: 'POST' });
     if (!res.ok) throw new Error('Failed to retry job');

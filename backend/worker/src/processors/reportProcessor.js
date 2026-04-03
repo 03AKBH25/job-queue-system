@@ -9,8 +9,11 @@ export const reportProcessor = async (job) => {
   const totalSteps = 4;
   const stepDone = createProgressTracker(jobId, totalSteps);
 
-  // Step 1: Validate email
+  // Step 1: Validate report data
   await new Promise(res => setTimeout(res, 500));
+  if (job.data.payload?.simulateFailure) {
+    throw new Error("Simulated failure triggered during report data validation.");
+  }
   await stepDone();
 
   // Step 2: Prepare content
