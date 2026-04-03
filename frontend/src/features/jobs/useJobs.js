@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { fetchJobs, fetchJobById } from "./jobApi";
+import { fetchJobs, fetchJobById } from "./jobs-api";
 
 export const useJobs = (filters = {}, searchId = "") => {
     const [jobs, setJobs] = useState([]);

@@ -3,7 +3,7 @@ import Sidebar from "./features/jobs/Sidebar";
 import { Activity, Mail, FileText, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
-import { createJob } from "./features/jobs/jobApi";
+import { createJob } from "./features/jobs/jobs-api";
 
 function App() {
   const [activeFilters, setActiveFilters] = useState({ status: null, type: null });

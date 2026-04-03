@@ -1,4 +1,4 @@
-import { cancelJob, retryJob } from './jobApi';
+import { cancelJob, retryJob } from './jobs-api';
 import { Badge } from './Badge';
 import { RotateCcw, XCircle, RefreshCw, Code2, Database, Mail } from 'lucide-react';
 import { useState } from 'react';
