@@ -8,6 +8,11 @@ const app = express()
 const PORT = process.env.PORT || 3000
 
 app.use(express.json())
+
+app.get("/", (req, res) => {
+    res.json({ message: "SystemCore API is Live! 🚀", endpoints: "/jobs" });
+});
+
 app.use("/jobs",jobRoutes)
 
 app.listen(PORT, () => {
