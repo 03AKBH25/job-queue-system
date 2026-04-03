@@ -3,7 +3,8 @@ import IORedis from "ioredis"
 const redisUrl = process.env.REDIS_URL || "redis://localhost:6739";
 
 const redisConnection = new IORedis(redisUrl, {
-    maxRetriesPerRequest: null
+    maxRetriesPerRequest: null,
+    keepAlive: 1000
 })
 
 redisConnection.on("connect",() => {
